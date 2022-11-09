@@ -1,7 +1,6 @@
 package tsf
 
 import (
-	"bytes"
 	"encoding/binary"
 	"math"
 )
@@ -11,40 +10,44 @@ const (
 	i16Size = 2
 )
 
-// AudioBuffer is a buffer for encoding samples as bytes.
-//
-// NOTE: All encode methods reset the buffer before encoding the samples.
-type AudioBuffer struct {
-	*bytes.Buffer
+// Buffer is a wrapper around a byte slice for encoding audio samples.
+// The zero value of a buffer can be used, as the slice is allocated by the encode methods if nil.
+type Buffer struct {
+	Slice []byte
 }
 
-// NewAudioBuffer creates an empty audio buffer.
-func NewAudioBuffer() AudioBuffer {
-	return AudioBuffer{new(bytes.Buffer)}
-}
+// EncodeInt encodes the 16-bit signed samples with the byte order into the buffer.
+func (b *Buffer) EncodeInt(samples []int16, ord binary.ByteOrder) {
+	b.alloc(len(samples) * i16Size)
 
-// EncodeF32 encodes the float32 samples into the buffer.
-func (ab AudioBuffer) EncodeF32(samples []float32, ord binary.ByteOrder) {
-	ab.Reset()
-	ab.Grow(len(samples) * f32Size)
-
-	temp := make([]byte, f32Size)
-
-	for _, s := range samples {
-		ord.PutUint32(temp, math.Float32bits(s))
-		ab.Write(temp)
+	for i, s := range samples {
+		o := i * i16Size
+		ord.PutUint16(b.Slice[o:o+i16Size], uint16(s))
 	}
 }
 
-// EncodeI16 encodes the int16 samples into the buffer.
-func (ab AudioBuffer) EncodeI16(samples []int16, ord binary.ByteOrder) {
-	ab.Reset()
-	ab.Grow(len(samples) * i16Size)
+// EncodeFloat encodes the 32-bit floating point samples with the byte order into the buffer.
+func (b *Buffer) EncodeFloat(samples []float32, ord binary.ByteOrder) {
+	b.alloc(len(samples) * f32Size)
 
-	temp := make([]byte, i16Size)
+	for i, s := range samples {
+		o := i * f32Size
+		ord.PutUint32(b.Slice[o:o+f32Size], math.Float32bits(s))
+	}
+}
 
-	for _, s := range samples {
-		ord.PutUint16(temp, uint16(s))
-		ab.Write(temp)
+func (b *Buffer) alloc(size int) {
+	if b.Slice == nil {
+		// allocate new buffer
+		b.Slice = make([]byte, size)
+	} else {
+		l := len(b.Slice)
+		if l < size {
+			// expand buffer if not big enough to encode all samples
+			b.Slice = append(b.Slice, make([]byte, size-l)...)
+		} else {
+			// buffer is bigger than requested size, reslice
+			b.Slice = b.Slice[:size]
+		}
 	}
 }
