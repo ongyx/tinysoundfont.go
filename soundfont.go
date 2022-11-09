@@ -7,7 +7,7 @@ package tsf
 
 #define TSF_IMPLEMENTATION
 #define TSF_STATIC
-#include "vendor/tsf/tsf.h"
+#include "tsf/tsf.h"
 */
 import "C"
 
@@ -19,23 +19,23 @@ type Soundfont struct {
 	mono bool
 }
 
-// NewSoundFont loads a soundfont from the given path.
-func NewSoundFont(path string) *Soundfont {
-	cpath := C.CString(path)
-	defer C.free(unsafe.Pointer(cpath))
+// NewSoundFont loads a soundfont from a buffer.
+func NewSoundFont(buf []byte) *Soundfont {
+	cbuf := unsafe.Pointer(&buf[0])
 
-	if p := C.tsf_load_filename(cpath); p != nil {
+	if p := C.tsf_load_memory(cbuf, C.int(len(buf))); p != nil {
 		return &Soundfont{ctx: p}
 	} else {
 		return nil
 	}
 }
 
-// NewSoundFontFromBuffer loads a soundfont from a buffer.
-func NewSoundFontFromBuffer(buf []byte) *Soundfont {
-	cbuf := unsafe.Pointer(&buf[0])
+// NewSoundFontFromPath loads a soundfont from the given path.
+func NewSoundFontFromPath(path string) *Soundfont {
+	cpath := C.CString(path)
+	defer C.free(unsafe.Pointer(cpath))
 
-	if p := C.tsf_load_memory(cbuf, C.int(len(buf))); p != nil {
+	if p := C.tsf_load_filename(cpath); p != nil {
 		return &Soundfont{ctx: p}
 	} else {
 		return nil

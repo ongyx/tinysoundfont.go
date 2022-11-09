@@ -18,8 +18,13 @@ type AudioBuffer struct {
 	*bytes.Buffer
 }
 
-// F32Encode encodes the float32 samples into the buffer.
-func (ab AudioBuffer) F32Encode(samples []float32, ord binary.ByteOrder) {
+// NewAudioBuffer creates an empty audio buffer.
+func NewAudioBuffer() AudioBuffer {
+	return AudioBuffer{new(bytes.Buffer)}
+}
+
+// EncodeF32 encodes the float32 samples into the buffer.
+func (ab AudioBuffer) EncodeF32(samples []float32, ord binary.ByteOrder) {
 	ab.Reset()
 	ab.Grow(len(samples) * f32Size)
 
@@ -31,8 +36,8 @@ func (ab AudioBuffer) F32Encode(samples []float32, ord binary.ByteOrder) {
 	}
 }
 
-// I16Encode encodes the int16 samples into the buffer.
-func (ab AudioBuffer) I16Encode(samples []int16, ord binary.ByteOrder) {
+// EncodeI16 encodes the int16 samples into the buffer.
+func (ab AudioBuffer) EncodeI16(samples []int16, ord binary.ByteOrder) {
 	ab.Reset()
 	ab.Grow(len(samples) * i16Size)
 

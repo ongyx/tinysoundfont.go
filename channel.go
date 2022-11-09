@@ -7,7 +7,7 @@ package tsf
 
 #define TSF_IMPLEMENTATION
 #define TSF_STATIC
-#include "vendor/tsf/tsf.h"
+#include "tsf/tsf.h"
 */
 import "C"
 
