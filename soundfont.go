@@ -20,6 +20,7 @@ type Soundfont struct {
 }
 
 // NewSoundFont loads a soundfont from a buffer.
+// If the soundfont fails to load, nil is returned.
 func NewSoundFont(buf []byte) *Soundfont {
 	cbuf := unsafe.Pointer(&buf[0])
 
@@ -31,6 +32,7 @@ func NewSoundFont(buf []byte) *Soundfont {
 }
 
 // NewSoundFontFromPath loads a soundfont from the given path.
+// If the soundfont fails to load, nil is returned.
 func NewSoundFontFromPath(path string) *Soundfont {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
